@@ -591,7 +591,8 @@ class IsabelleEnv(gym.Env):
 if __name__ == "__main__":
     import logging 
     logger = logging.getLogger()
-    env = IsabelleEnv(logger=logger, isabelle_path="/data1/wanghaiming/Isabelle2022/")
+    isabelle_path = "/home/hanyuan/Isabelle2022/"
+    env = IsabelleEnv(logger=logger, isabelle_path=isabelle_path)
     env.reset()
     code = r"""
 theory Scratch

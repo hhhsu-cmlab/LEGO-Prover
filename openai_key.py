@@ -7,6 +7,7 @@ GPT_35_POOL = [
 ]
 
 GPT_4_POOL = [
+    (os.environ["OPENAI_API_KEY"], None)
 ]
 
 print("Testing api keys in GPT_35_POOL:")
