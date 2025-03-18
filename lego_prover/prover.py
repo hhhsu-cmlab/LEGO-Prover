@@ -4,7 +4,8 @@ import re
 import time
 import multiprocessing as mp
 import tiktoken
-from lego_prover.env.isa_bridge import IsabelleEnv
+#from lego_prover.env.isa_bridge import IsabelleEnv
+from lego_prover.env.dummy_env import DummyEnv
 
 import lego_prover.utils as U
 
@@ -60,11 +61,7 @@ class Prover:
         self.logger.info(f"lego_prover running in rank {rank}")
         self.model_name = model_name
 
-        self.env = IsabelleEnv(
-            logger=self.logger,
-            isabelle_path=isabelle_path,
-            server_port=server_port
-        )
+        self.env = DummyEnv()
         self.action_agent_model_name = model_name
         self.tokenizer_encoder = tiktoken.encoding_for_model(
             self.action_agent_model_name)

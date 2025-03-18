@@ -4,6 +4,7 @@ import openai
 # Please put your API keys here, the format is: ("sk-xxx", "org-xxx")
 GPT_35_POOL = [
     # ("sk-xxx", "org-xxx"),
+    (os.environ["OPENAI_API_KEY"], None)
 ]
 
 GPT_4_POOL = [
