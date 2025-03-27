@@ -16,6 +16,7 @@ from gymnasium.core import ObsType
 import lego_prover.utils as U
 
 from .process_monitor import SubprocessMonitor
+#from process_monitor import SubprocessMonitor
 
 import lego_prover.env.server_pb2 as server_pb2
 import lego_prover.env.server_pb2_grpc as server_pb2_grpc
@@ -123,13 +124,13 @@ class IsabelleEnv(gym.Env):
         return SubprocessMonitor(
             commands=[
                 "bash",
-                "run_server.sh",
+                "run_server_sbt.sh",
                 str(server_port),
             ],
             name="isabelle_server",
             ready_match=r"Server is running. Press Ctrl-C to stop.",
             log_path=U.f_join(self.log_path, "isabelle_server"),
-            cwd=os.path.abspath("lego_prover/env/Portal-to-ISAbelle"),
+            cwd="/home/hanyuan/Portal-to-ISAbelle",
             server_port=server_port,
         )
         
@@ -151,9 +152,11 @@ class IsabelleEnv(gym.Env):
 
         # step 1: parse code
         parsed_code = self._get_parsed_code(code)
+        #print(f"[step] parsed code: {parsed_code}")
 
         # step 2: step by step verification
         verified_result = self._verify_step_by_step(parsed_code, quick_check=quick_check)
+        #print(f"[step] step 2 verified result: {verified_result}")
         if quick_check:
             return verified_result, None, None, None
 
@@ -206,6 +209,9 @@ class IsabelleEnv(gym.Env):
                 return result
             except Exception as e:
                 self.logger.info(f"Isabelle environment exception: {e}")
+                print("_post ERRORRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRRrr")
+                print(e)
+                print(f"action: {action}")
                 self.isabelle_server.terminate()
                 self.isabelle_server = self.get_isabelle_process(self.server_port)
                 self.isabelle_server.run()
@@ -592,9 +598,21 @@ if __name__ == "__main__":
     import logging 
     logger = logging.getLogger()
     isabelle_path = "/home/hanyuan/Isabelle2022/"
-    env = IsabelleEnv(logger=logger, isabelle_path=isabelle_path)
+    home_path = '/home/hanyuan'
+    working_dir = os.path.join(home_path, "Isabelle2022/src/HOL/Examples") 
+    #working_dir = '/home/hanyuan/Desktop/reason/LEGO-Prover/miniF2F' # causes server internal error during <initialise>
+    print(f"working_dir: {working_dir}")
+
+    env = IsabelleEnv(
+        logger=logger, 
+        isabelle_path=isabelle_path,
+        working_dir=working_dir,
+        interactive_file=os.path.join(working_dir, 'Interactive.thy'),
+        server_port=9000,
+        request_timeout=600
+    )
     env.reset()
-    code = r"""
+    code_old = r"""
 theory Scratch
 imports Main
 begin
@@ -627,10 +645,67 @@ qed
 
 end
     """
-    verified_result, code, skill_codes = env.step(code)
-    print(f"####### Success: {verified_result['success']} ########")
-    print("##### output ########")
 
+    code = """theorem gcd_lcm:
+  assumes "gcd (n :: nat) 4 = 1" 
+      and "lcm (n :: nat) 4 = 28"
+  shows "n = 7"
+proof -
+  have c1: "1*28 = n*4" using assms
+    sledgehammer
+  then have c2: "n = 1*28/4"
+    sledgehammer
+  then show ?thesis
+    sledgehammer
+qed"""
+
+    code = """
+theorem gcd_lcm:
+  assumes "gcd (n :: nat) 4 = 1" 
+      and "lcm (n :: nat) 4 = 28"
+  shows "n = 7"
+proof -
+  have c1: "1*28 = n*4" using assms
+    by (metis prod_gcd_lcm_nat)
+  then have c2: "n = 1*28/4"
+    by simp
+  then show ?thesis
+    by linarith
+qed
+"""
+
+    code = """
+theory Interactive
+  imports Complex_Main
+begin
+theorem gcd_lcm:
+  assumes "gcd (n :: nat) 4 = 1" 
+      and "lcm (n :: nat) 4 = 28"
+  shows "n = 7"
+proof -
+  have c1: "1*28 = n*4" using assms
+    by (metis prod_gcd_lcm_nat)
+  then have c2: "n = 1*28/4"
+    by simp
+  then show ?thesis
+    by linarith
+qed
+"""
+
+    print("code before:")
     print(code)
+
+    verified_result, code, skill_codes, req = env.step(code)
+    print(f"####### Success: {verified_result['success']} ########")
+    import pdb; pdb.set_trace()
+
+    '''
+    (Pdb) verified_result
+{'success': False, 'reason': 'Step error: Outer syntax error (line 7): proposition expected,\nbut keyword fixes (line 7) was found\nAt command "\'lemma sum_induction:\n  fixes a b n :: nat\n  assumes "a > 0" "b > 0" "(\\Sum>k = 0\'" (line 7)', 'num_steps': 20, 'last_step': 2, 'error_step_index': 1, 'step_results': [{'index': 0, 'step': 'theory Scratch\nimports Main\nbegin', 'output': '', 'step_time': 0.011111974716186523}, {'index': 1, 'step': 'lemma sum_induction:\n  fixes a b n :: nat\n  assumes "a > 0" "b > 0" "(\\Sum>k = 0', 'output': 'Step error: Outer syntax error (line 1): proposition expected,\nbut keyword fixes (line 2) was found\nAt command "<malformed>" (line 1)', 'step_time': 0.00760960578918457}], 'corrected_steps': {}}
+
+    '''
+
+
+    env.close()
     
     

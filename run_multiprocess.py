@@ -33,6 +33,8 @@ parser.add_argument('--num_attempts', type=int, default=100,
                     help='number of proving attempts for each problem in the dataset')
 
 args = parser.parse_args()
+print("input args:")
+print(args)
 
 resume = args.resume
 data_split = args.data_split
