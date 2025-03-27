@@ -37,17 +37,21 @@ class LLMMixture:
             try:
                 if "gpt-4" in self.model_name:
                     if llm_type == "short":
-                        llm_model = random.choice(["gpt-4", "gpt-4-0314", "gpt-4-0613"])
+                        #llm_model = random.choice(["gpt-4", "gpt-4-0314", "gpt-4-0613"])
+                        llm_model = "gpt-4"
                         api_key = random.choice(GPT_4_POOL)
                     else:
                         assert False, "天下变了，没有gpt-4-32k了。。。"
                 else:
                     api_key = random.choice(GPT_35_POOL)
-                    if llm_type == "short":
-                        llm_model = random.choice(["gpt-3.5-turbo", "gpt-3.5-turbo-0301", "gpt-3.5-turbo-0613", "gpt-3.5-turbo-16k", "gpt-3.5-turbo-16k-0613"])
+
+                    llm_model = "gpt-3.5-turbo-0125" # as of 20250318
+
+                    # if llm_type == "short":
+                    #     llm_model = random.choice(["gpt-3.5-turbo", "gpt-3.5-turbo-0301", "gpt-3.5-turbo-0613", "gpt-3.5-turbo-16k", "gpt-3.5-turbo-16k-0613"])
                         
-                    else:
-                        llm_model = random.choice(["gpt-3.5-turbo-16k", "gpt-3.5-turbo-16k-0613"])
+                    # else:
+                    #     llm_model = random.choice(["gpt-3.5-turbo-16k", "gpt-3.5-turbo-16k-0613"])
                     # llm_model = random.choice(["gpt-4-32k","gpt-4-32k-0314","gpt-4-32k-0613"])
                 # print(f"ckpt in 1 {llm_type}, {llm_model}")
                 if temperature is None:

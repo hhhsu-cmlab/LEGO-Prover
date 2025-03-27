@@ -1,4 +1,6 @@
 import gymnasium as gym
+from gymnasium.core import ObsType
+
 from typing import List, SupportsFloat, Any, Tuple, Dict
 from copy import copy
 import re
@@ -62,8 +64,7 @@ SPECIAL_SYMBOL = {
 
 class DummyEnv(gym.Env):
     def __init__(self):
-        self.action_space = gym.spaces.Discrete(2)
-        self.observation_space = gym.spaces.Discrete(2)
+        pass
 
     def reset(self):
         return f"Starting is successful: {True}"

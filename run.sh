@@ -3,6 +3,7 @@ python run_multiprocess.py \
   --ckpt_dir checkpoints/lego_prover_test/20250318 \
   --isabelle_path /home/hanyuan/Isabelle2022 \
   --model_name gpt-4 \
+  --num_prover 3 \
   --num_evolver 4 \
   --num_attempts 5
  

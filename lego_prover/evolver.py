@@ -23,7 +23,7 @@ import random
 import traceback
 from lego_prover.agents.skill import SkillManager
 from lego_prover.env.chromas import ChromaBridge
-from lego_prover.env.isa_bridge import IsabelleEnv
+from lego_prover.env.dummy_env import DummyEnv
 import lego_prover.utils as U
 from langchain.prompts import SystemMessagePromptTemplate, HumanMessagePromptTemplate
 
@@ -80,11 +80,7 @@ class Evolver:
             request_timeout=16000,
         )
 
-        self.env = IsabelleEnv(
-            logger=self.logger,
-            isabelle_path=isabelle_path,
-            server_port=server_port
-        )
+        self.env = DummyEnv()
         self.env.reset()
 
         self.skill_manager = SkillManager(
