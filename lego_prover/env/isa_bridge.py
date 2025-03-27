@@ -15,8 +15,8 @@ from gymnasium.core import ObsType
 
 import lego_prover.utils as U
 
-#from .process_monitor import SubprocessMonitor
-from process_monitor import SubprocessMonitor
+from .process_monitor import SubprocessMonitor
+#from process_monitor import SubprocessMonitor
 
 import lego_prover.env.server_pb2 as server_pb2
 import lego_prover.env.server_pb2_grpc as server_pb2_grpc
@@ -152,9 +152,11 @@ class IsabelleEnv(gym.Env):
 
         # step 1: parse code
         parsed_code = self._get_parsed_code(code)
+        #print(f"[step] parsed code: {parsed_code}")
 
         # step 2: step by step verification
         verified_result = self._verify_step_by_step(parsed_code, quick_check=quick_check)
+        #print(f"[step] step 2 verified result: {verified_result}")
         if quick_check:
             return verified_result, None, None, None
 
@@ -597,8 +599,8 @@ if __name__ == "__main__":
     logger = logging.getLogger()
     isabelle_path = "/home/hanyuan/Isabelle2022/"
     home_path = '/home/hanyuan'
-    working_dir = os.path.join(home_path, "Isabelle2022/src/HOL/Examples")
-    #working_dir = '/home/hanyuan/Desktop/reason/LEGO-Prover/miniF2F'
+    working_dir = os.path.join(home_path, "Isabelle2022/src/HOL/Examples") 
+    #working_dir = '/home/hanyuan/Desktop/reason/LEGO-Prover/miniF2F' # causes server internal error during <initialise>
     print(f"working_dir: {working_dir}")
 
     env = IsabelleEnv(
@@ -644,7 +646,7 @@ qed
 end
     """
 
-    code = """theorem gcd_lcm
+    code = """theorem gcd_lcm:
   assumes "gcd (n :: nat) 4 = 1" 
       and "lcm (n :: nat) 4 = 28"
   shows "n = 7"
@@ -656,6 +658,42 @@ proof -
   then show ?thesis
     sledgehammer
 qed"""
+
+    code = """
+theorem gcd_lcm:
+  assumes "gcd (n :: nat) 4 = 1" 
+      and "lcm (n :: nat) 4 = 28"
+  shows "n = 7"
+proof -
+  have c1: "1*28 = n*4" using assms
+    by (metis prod_gcd_lcm_nat)
+  then have c2: "n = 1*28/4"
+    by simp
+  then show ?thesis
+    by linarith
+qed
+"""
+
+    code = """
+theory Interactive
+  imports Complex_Main
+begin
+theorem gcd_lcm:
+  assumes "gcd (n :: nat) 4 = 1" 
+      and "lcm (n :: nat) 4 = 28"
+  shows "n = 7"
+proof -
+  have c1: "1*28 = n*4" using assms
+    by (metis prod_gcd_lcm_nat)
+  then have c2: "n = 1*28/4"
+    by simp
+  then show ?thesis
+    by linarith
+qed
+"""
+
+    print("code before:")
+    print(code)
 
     verified_result, code, skill_codes, req = env.step(code)
     print(f"####### Success: {verified_result['success']} ########")
