@@ -16,7 +16,8 @@ new_pool = []
 for key, org in GPT_35_POOL:
     try:
         response = openai.ChatCompletion.create(
-            model="gpt-3.5-turbo-16k",
+            #model="gpt-3.5-turbo-16k",
+            model="gpt-3.5-turbo-0125", # as of 20250318
             messages=[{"role": "system", "content": "Hi"}],
             temperature=0,
             api_key=key,
