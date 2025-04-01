@@ -131,3 +131,37 @@ class CurriculumAgent:
             self.completed_tasks, f"{self.ckpt_dir}/curriculum/completed_tasks.json"
         )
         U.dump_json(self.failed_tasks, f"{self.ckpt_dir}/curriculum/failed_tasks.json")
+
+if __name__ == "__main__":
+    data_split = "test"
+    number_of_prover_attempts = 2
+
+    ckpt_dir = "curricumlum_py_debug"
+    curriculum_agent_lock = mp.Lock()
+
+    # load miniF2F tasks into the queue
+    miniF2F_tasks = mp.Queue()
+    problem_names = []
+    for name in os.listdir(f"data/full_data/{data_split}"):
+        path = os.path.join(f"data/full_data/{data_split}", name)
+        context = U.load_json(path)
+        problem_names.append((path, len(context["informal_proof"])))
+    problem_names = sorted(problem_names, key=lambda x: x[1])
+    problem_names = [pn[0] for pn in problem_names]
+    problem_names = problem_names * number_of_prover_attempts  
+    for pn in problem_names:
+        miniF2F_tasks.put(pn)
+    print(f"Sketch to finish: {miniF2F_tasks.qsize()}")
+
+    curri_agent = CurriculumAgent(
+        ckpt_dir=ckpt_dir,
+        miniF2F_tasks=miniF2F_tasks,
+        curriculum_task_type="queue_curriculum",
+        curriculum_agent_lock=curriculum_agent_lock,
+    )
+
+    for i in range(5):
+        file_path, context = curri_agent.propose_next_task()
+        print(f"i: {i}")
+        print(f"file_path: {file_path}")
+        print(f"context: {context}")
